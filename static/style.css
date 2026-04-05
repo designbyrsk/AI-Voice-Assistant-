@@ -1,0 +1,152 @@
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #0f172a;
+    color: white;
+}
+
+.app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Header */
+.header {
+    width: 100%;
+    text-align: center;
+    padding: 22px;
+    text-align: center;
+    font-size: 25px;
+    background: #111827;
+    border-bottom: 1px solid #1f2937;
+}
+
+/* Chat */
+.chat {
+    align-self: center;
+    width: 50%;
+    max-width: 700px;
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+/* Messages */
+.message {
+    max-width: 70%;
+    padding: 10px 14px;
+    margin: 8px 0;
+    border-radius: 15px;
+    /* ✅ ADD THESE TWO LINES */
+    white-space: pre-wrap; 
+    word-wrap: break-word;
+}
+
+/* User */
+.user {
+    background: #2563eb;
+    margin-left: auto;
+}
+
+/* Bot */
+.bot {
+    background: #1f2937;
+}
+
+/* Input bar */
+.input-bar {
+    width: 50%;
+    align-self: center;
+    max-width: 700px;
+    display: flex;
+    padding: 10px;
+    background: #111827;
+    margin-bottom: 40px;
+}
+
+/* Input */
+#textInput {
+    flex: 1;
+    padding: 12px;
+    border-radius: 20px;
+    border: none;
+    outline: none;
+    margin: 0 10px;
+    background: #1f2937;
+    color: white;
+}
+
+#stopBtn {
+    display: none !important;
+    width: 45px;   /* Fixed width */
+    height: 45px;  /* Fixed height (must match width) */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0; /* CRITICAL: Prevents them from turning into ovals */
+    color: rgb(15, 91, 233);
+    font-size: 18px;
+}
+
+/* Buttons */
+#sendBtn, #micBtn {
+    width: 45px;   /* Fixed width */
+    height: 45px;  /* Fixed height (must match width) */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0; /* CRITICAL: Prevents them from turning into ovals */
+    color: rgb(15, 91, 233);
+    font-size: 18px;
+}
+
+#micBtn.active {
+    background-color: green !important;
+    box-shadow: 0 0 10px black;
+}
+#micBtn:hover, #sendBtn:hover, #stopBtn:hover {
+    opacity: 1.2;
+    background: rgb(166, 187, 247);
+    transform: scale(1.1);
+}
+}
+.chat-container {
+    background-image: url('your-logo-path.png'); /* Add your image path here */
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 200px; /* Adjust size as needed */
+    opacity: 0.1; /* This makes it look like a subtle watermark */
+    
+    /* Ensure the container takes up the space */
+    min-height: 400px; 
+    display: flex;
+    flex-direction: column;
+}
+/* Base Style (How it looks normally) */
+.button-group {
+    display: flex;
+    gap: 8px; /* Space between Send and Stop */
+    align-items: center;
+}
+#stopBtn.speaking {
+    background-color: #ef4444; /* Bright Red */
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+#stopBtn.visible {
+    display: flex !important; 
+}
