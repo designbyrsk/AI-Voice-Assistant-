@@ -3,17 +3,26 @@ recognition.lang = "en-US";
 recognition.continuous = true;
 
 let isListening = false;
+let currentTypingInterval = null;
 const chatBox = document.getElementById("chat");
 const textInput = document.getElementById("textInput");
-
+function scrollToBottom() {
+    const chatContainer = document.getElementById("chat");
+    if (chatContainer) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+}
 // 🎤 MIC TOGGLE
 document.getElementById("micBtn").onclick = () => {
     try {
         if (!isListening) {
+            isListening = true;
             recognition.start();
         } else {
-            recognition.stop();
             isListening = false;
+            recognition.stop();
+            window.speechSynthesis.cancel();
+            
         }
     } catch (err) {
         console.error("Mic Error:", err);
@@ -60,8 +69,15 @@ document.getElementById("stopBtn").onclick = () => {
 async function sendMessage(text) {
     if (!text.trim()) return;
 
+    window.speechSynthesis.cancel();
+    if (currentTypingInterval) {
+        clearInterval(currentTypingInterval);
+        currentTypingInterval = null;
+    }
+
     addMessage(text, "user");
     textInput.value = "";
+    setBusyState(true);
 
     try {
         const response = await fetch("/chat", {
@@ -75,9 +91,31 @@ async function sendMessage(text) {
         let reply = cleanText(data.reply);
         speak(reply);
         await typeMessage(reply);
+        setBusyState(false);
 
     } catch (error) {
         addMessage("⚠️ Connection error", "bot");
+        setBusyState(false);
+    }
+}
+
+function setBusyState(isBusy) {
+    const textInput = document.getElementById("textInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const stopBtn = document.getElementById("stopBtn");
+
+    if (isBusy) {
+        textInput.disabled = true;
+        sendBtn.disabled = true; 
+        // We keep the stopBtn display flexible so the speak() function can control it
+        stopBtn.style.display = "flex"; 
+    } else {
+        textInput.disabled = false;
+        sendBtn.disabled = false;
+        // Only hide if the AI isn't currently speaking
+        if (!window.speechSynthesis.speaking) {
+            stopBtn.style.display = "none";
+        }
     }
 }
 
@@ -99,13 +137,13 @@ function typeMessage(text) {
 
         let i = 0;
         const chars = Array.from(text);
-        const interval = setInterval(() => {
+        currentTypingInterval = setInterval(() => {
             div.textContent += chars[i];  
             chatBox.scrollTop = chatBox.scrollHeight;
             i++;
             if (i >= chars.length) {
-                clearInterval(interval);
-                
+                clearInterval(currentTypingInterval);
+                currentTypingInterval = null;                
                 resolve();
             }
         }, 20);
@@ -120,57 +158,77 @@ function cleanText(text) {
         .replace(/\s{2,}/g, " ")
         .trim();
 }
+// 1. Improved Helper for Hindi Voice Selection
+function getBestHindiVoice() {
+    const voices = window.speechSynthesis.getVoices();
+    // Priority: Google Native -> Microsoft Native -> Any hi-IN
+    return voices.find(v => v.name.includes("Google हिन्दी")) || 
+           voices.find(v => v.name.includes("Microsoft Hemant")) ||
+           voices.find(v => v.lang === "hi-IN") ||
+           voices.find(v => v.lang.includes("hi"));
+}
 
-// 🔊 VOICE
+// 2. Updated Speak Function
 function speak(text) {
     if (!text.trim()) return;
 
     const stopBtn = document.getElementById("stopBtn");
-    if (stopBtn) {
-        stopBtn.classList.add("visible");
-        stopBtn.innerText = "🔴";
-        stopBtn.classList.add("speaking");
-
-    }
+    
+    // Clean text: keeps Hindi characters and basic punctuation
     const cleanText = text
         .replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '')
-        .replace(/[^\w\s.,!?]/g, '') 
+        .replace(/[^\w\s.,!?\u0900-\u097F]/gu, '') 
         .replace(/\s+/g, ' ')
         .trim();
 
     const speech = new SpeechSynthesisUtterance(cleanText);
-    const voices = window.speechSynthesis.getVoices();;
-    const isHindi = /[\u0900-\u097F]/.test(cleanText);
-    if (isHindi) {
-        // Look for an Indian Hindi voice
-        speech.voice = voices.find(v => v.lang.includes("hi-IN")) || voices.find(v => v.lang.includes("hi"));
-        speech.lang = "hi-IN";
-        speech.rate = 1.0; 
+    const voices = window.speechSynthesis.getVoices();
+
+    // Handle asynchronous voice loading
+    if (voices.length === 0) {
+        window.speechSynthesis.onvoiceschanged = () => speak(text);
+        return;
     }
-    else {
-        // Look for a US English voice
+
+    const isHindi = /[\u0900-\u097F]/.test(cleanText);
+    
+    if (isHindi) {
+        // Use the dedicated helper for better Hindi clarity
+        speech.voice = getBestHindiVoice();
+        speech.lang = "hi-IN";
+        speech.rate = 0.9; 
+    } else {
         speech.voice = voices.find(v => v.lang.includes("en-US")) || voices.find(v => v.lang.includes("en"));
         speech.lang = "en-US";
         speech.rate = 1.0;
     }
-    speech.onend = () => {
+
+    // --- UI CONTROL VIA EVENTS ---
+
+    // 🟢 SHOW ONLY when speech actually starts
+    speech.onstart = () => {
         if (stopBtn) {
-            stopBtn.classList.remove("visible");
-            
-        }
-    };
-    speech.onerror = () => {
-        if (stopBtn) {
-            stopBtn.classList.remove("visible");
+            stopBtn.classList.add("visible");
+            stopBtn.classList.add("speaking");
+            stopBtn.innerText = "🔴";
         }
     };
 
+    // 🔴 HIDE ONLY when speech finishes or errors
+    const hideButton = () => {
+        if (stopBtn) {
+            stopBtn.classList.remove("visible");
+            stopBtn.classList.remove("speaking");
+        }
+    };
+
+    speech.onend = hideButton;
+    speech.onerror = hideButton;
+
+    // Always cancel current speech before starting new one
     window.speechSynthesis.cancel();
     
     setTimeout(() => {
         window.speechSynthesis.speak(speech);
     }, 50);
 }
-window.speechSynthesis.onvoiceschanged = () => {
-    console.log("Voices loaded:", window.speechSynthesis.getVoices().length);
-};

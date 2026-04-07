@@ -2,7 +2,14 @@ body {
     margin: 0;
     font-family: 'Segoe UI', sans-serif;
     background: #0f172a;
+    background-image: linear-gradient(rgba(15, 23, 42, 0.5), rgba(15, 23, 42, 0.5)), url('background.png'); 
+    opacity: 1;
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
     color: white;
+    overflow: hidden;
 }
 
 .app {
@@ -13,29 +20,52 @@ body {
 
 /* Header */
 .header {
-    width: 100%;
+    flex-shrink: 0; /* Prevents header from collapsing */
+    width: 100%;    /* Changed from 90% to prevent alignment bugs */
     text-align: center;
-    padding: 22px;
-    text-align: center;
-    font-size: 25px;
-    background: #111827;
-    border-bottom: 1px solid #1f2937;
+    padding: 25px;
+    font-size: 40px;
+    background: #1b2b4e;
+    border-bottom: 2px solid #1f2937;
+    box-sizing: border-box;
 }
 
 /* Chat */
 .chat {
     align-self: center;
-    width: 50%;
-    max-width: 700px;
+    width: 100%;
+    max-width: 800px;
     flex: 1;
-    padding: 20px;
+    padding: 10px;
     overflow-y: auto;
+
+}
+.chat::-webkit-scrollbar {
+    width: 6px; /* Narrow width */
 }
 
+.chat::-webkit-scrollbar-track {
+    background: transparent; /* Keeps the background clean */
+}
+
+.chat::-webkit-scrollbar-thumb {
+    background: #334155; /* Subtle dark gray/blue */
+    border-radius: 10px;
+}
+
+.chat::-webkit-scrollbar-thumb:hover {
+    background: #475569; /* Slightly lighter on hover */
+}
+
+/* ✅ For Firefox support */
+.chat {
+    scrollbar-width: thin;
+    scrollbar-color: #334155 transparent;
+}
 /* Messages */
 .message {
     max-width: 70%;
-    padding: 10px 14px;
+    padding: 15px 20px;
     margin: 8px 0;
     border-radius: 15px;
     /* ✅ ADD THESE TWO LINES */
@@ -47,22 +77,29 @@ body {
 .user {
     background: #2563eb;
     margin-left: auto;
+    font-size: 25px;
 }
 
 /* Bot */
 .bot {
     background: #1f2937;
+    font-size: 25px;
 }
 
 /* Input bar */
 .input-bar {
-    width: 50%;
-    align-self: center;
+    flex-shrink: 0; /* Prevents bar from being pushed off screen */
+    width: 100%;
     max-width: 700px;
+    align-self: center;
     display: flex;
+    align-items: center;
     padding: 10px;
     background: #111827;
-    margin-bottom: 40px;
+    border-top: 1px solid #1f2937;
+    box-sizing: border-box;
+    /* Ensures it sits flush against the bottom */
+    margin-bottom: 20px;
 }
 
 /* Input */
@@ -74,7 +111,7 @@ body {
     outline: none;
     margin: 0 10px;
     background: #1f2937;
-    color: white;
+    color: white; /* Prevents iOS from auto-zooming */
 }
 
 #stopBtn {
@@ -107,6 +144,7 @@ body {
     font-size: 18px;
 }
 
+
 #micBtn.active {
     background-color: green !important;
     box-shadow: 0 0 10px black;
@@ -116,13 +154,13 @@ body {
     background: rgb(166, 187, 247);
     transform: scale(1.1);
 }
-}
+
 .chat-container {
-    background-image: url('your-logo-path.png'); /* Add your image path here */
+    background-image: url('background.png'); /* Add your image path here */
     background-repeat: no-repeat;
     background-position: center;
     background-size: 200px; /* Adjust size as needed */
-    opacity: 0.1; /* This makes it look like a subtle watermark */
+    opacity: 0.2; /* This makes it look like a subtle watermark */
     
     /* Ensure the container takes up the space */
     min-height: 400px; 
@@ -132,7 +170,8 @@ body {
 /* Base Style (How it looks normally) */
 .button-group {
     display: flex;
-    gap: 8px; /* Space between Send and Stop */
+    gap: 5px; /* Space between Send and Stop */
+    flex-shrink: 0;
     align-items: center;
 }
 #stopBtn.speaking {
@@ -149,4 +188,38 @@ body {
 
 #stopBtn.visible {
     display: flex !important; 
+}
+@media (min-width: 768px) {
+    .chat, .input-bar {
+        width: 70%; /* Slightly wider for tablets */
+    }
+}
+
+@media (min-width: 1024px) {
+    .chat, .input-bar {
+        width: 50%; /* Back to 50% for large desktops */
+    }
+}
+
+/* --- FIX FOR FONT SIZES ON MOBILE --- */
+@media (max-width: 480px) {
+    .header {
+        font-size: 18px;
+        padding: 15px;
+    }
+    .message {
+        max-width: 85%; /* Let messages take more space */
+        font-size: 14px;
+    }
+}
+.action-btn:disabled {
+    background-color: #475569; /* Greyish color */
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+#textInput:disabled {
+    background-color: #1e293b;
+    color: #94a3b8;
+    cursor: not-allowed;
 }
