@@ -16,6 +16,9 @@ body {
     display: flex;
     flex-direction: column;
     height: 100vh;
+    height: 100dvh;
+    padding-bottom: env(safe-area-inset-bottom); 
+    box-sizing: border-box;
 }
 
 /* Header */
@@ -99,7 +102,7 @@ body {
     border-top: 1px solid #1f2937;
     box-sizing: border-box;
     /* Ensures it sits flush against the bottom */
-    margin-bottom: 20px;
+    margin-bottom: calc(20px + env(safe-area-inset-bottom));
 }
 
 /* Input */
